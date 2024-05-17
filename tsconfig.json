@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "allowJs": true,
+        "moduleResolution": "Node",
+        "module": "ESNext",
+        "target": "ESNext",
+        "esModuleInterop": true,
+        "noEmit": true,
+        "skipLibCheck": true,
+        "baseUrl": "./"
+    },
+    "include": ["src", "tests"]
+}

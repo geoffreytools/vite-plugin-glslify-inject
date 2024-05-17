@@ -94,24 +94,16 @@ void main() {
 
 precision highp float;
 
-vec3 interRGB(vec3 from, vec3 to, float t) {
-    return vec3(
-        (to[0] - from[0]) * t + from[0],
-        (to[1] - from[1]) * t + from[1],
-        (to[2] - from[2]) * t + from[2]
-    );
-}
-
 vec3 interColor (vec3 gradient[2], float t) {
-    return interRGB(gradient[0], gradient[1], t);
+    return mix(gradient[0], gradient[1], t);
 }
 
 vec3 interColor (vec3 gradient[3], float t) {
     vec3 color;
     if(t <= 0.5) {
-        color = interRGB(gradient[0], gradient[1], t * 2.0);
+        color = mix(gradient[0], gradient[1], t * 2.0);
     }  else {
-        color = interRGB(gradient[1], gradient[2], (t - 0.5) * 2.0);
+        color = mix(gradient[1], gradient[2], (t - 0.5) * 2.0);
     }
     return color;
 }

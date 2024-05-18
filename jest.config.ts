@@ -9,5 +9,6 @@ const config: Config.InitialOptions = {
     },
     moduleNameMapper: {
         'vite-plugin-glslify-inject/inject': '<rootDir>/src/inject.ts',
-      },
+        '^(.*)\\.js$': '$1'
+    }
 };

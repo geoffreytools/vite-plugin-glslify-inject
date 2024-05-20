@@ -1,9 +1,10 @@
 export { matchDeclarations, replaceDeclaration, constructValue, constructType, UserTypes };
 
+import { Showable, options, parenInline } from '@lib/str.js';
 import { Vec, Mat, matchDeclarationsFactory } from './utils.js';
 
-type GlslTypes = keyof TypesMap;
-type UserTypes = TypesMap[GlslTypes];
+type ConstTypes = keyof TypesMap;
+type UserTypes = TypesMap[ConstTypes];
 
 type Size = 2 | 3 | 4;
 type Bool = boolean;
@@ -35,12 +36,12 @@ type TypesMap = {
     mat4: Mat<4>
 };
 
-const constructType = (type: GlslTypes) => {
-    if (type in typeConstructors) return typeConstructors[type as GlslTypes];
-    throw TypeError(`type ${type} is notsupported`)
+const constructType = (type: ConstTypes) => {
+    if (type in typeConstructors) return typeConstructors[type as ConstTypes];
+    throw TypeError(`type ${type} is not supported`)
 }
 
-const typeConstructors: Record<GlslTypes, string> = {
+const typeConstructors: Record<ConstTypes, string> = {
     bool: 'boolean',
     int: 'number',
     float: 'number',
@@ -62,9 +63,9 @@ const typeConstructors: Record<GlslTypes, string> = {
     mat4: Mat(4)
 };
 
-const glslTypes = Object.keys(typeConstructors);
+const constTypes = Object.keys(typeConstructors);
 
-const constructValue = <K extends GlslTypes>(value: TypesMap[K], type: K): string =>
+const constructValue = <K extends ConstTypes>(value: TypesMap[K], type: K): string =>
     valueConstructors[type](value);
 
 const bool = String;
@@ -74,16 +75,19 @@ const int = (value: number) => String(Math.round(value));
 const float = (value: number) => value % 1 === 0 ? `${value}.0` : String(value);
 
 const vec = <I extends Size>(i: I) => (value: TypesMap[`vec${I}`]) =>
-  `vec${i}(${value.map(float).join(', ')})`;
+    nAryFn('vec', i, value.map(float));
 
 const ivec = <I extends Size>(i: I) => (value: TypesMap[`ivec${I}`]) =>
-  `ivec${i}(${value.map(Math.round).join(', ')})`;
+    nAryFn('ivec', i, value.map(Math.round));
 
 const bvec = <I extends Size>(i: I) => (value: TypesMap[`bvec${I}`]) =>
-  `bvec${i}(${value.map(String).join(', ')})`;
+    nAryFn('bvec', i, value.map(String));
 
 const mat = <I extends Size>(i: I) => (value: TypesMap[`mat${I}`]) =>
-  `mat${i}(${value.flatMap(row => row.map(float)).join(', ')})`;
+    nAryFn('mat', i, value.flatMap(row => row.map(float)));
+
+const nAryFn = (name: string, i: Size, values: Showable[]) =>
+    name + i + parenInline(values);
 
 const valueConstructors = {
     bool: bool,
@@ -107,9 +111,9 @@ const valueConstructors = {
     mat4: mat(4),
 } as const;
 
-const declaration = new RegExp(`^(\\s*)const (${glslTypes.join('|')}) (.+?) = .+?;`, 'gm');
+const declaration = new RegExp(`^(\\s*)const ${options(constTypes)} (.+?) = .+?;`, 'gm');
 
-type DeclarationMatches = [type: GlslTypes, name: string];
+type DeclarationMatches = [type: ConstTypes, name: string];
 
 const matchDeclarations = matchDeclarationsFactory<DeclarationMatches>(declaration);
 

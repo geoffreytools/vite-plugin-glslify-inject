@@ -1,28 +1,35 @@
 export { getModuleDeclaration, renderModuleDeclaration };
 
-import { matchDeclarations, constructType } from '../translationLayer/constants.js';
+import { curlyPad, curlyInline } from '@lib/str.js';
+import * as constants from '../translationLayer/constants.js';
 
 const getModuleDeclaration = (code: string, moduleId: string): string => {
-    const matches = matchDeclarations(code)
-        .map(([type, name]) => `${name}?: ${constructType(type)}`)     
+    const matches = constants.matchDeclarations(code)
+        .map(([type, name]) => `${name}?: ${constants.constructType(type)}`)     
     
     return renderModuleDeclaration(moduleId, matches);
 };
 
-const renderModuleDeclaration = (path: string, args: string[]) => {
-    const lines = args.length ? [
-        'const text: string;',
-        `const inject: (map: { ${args.join(', ')} }) => string;`,
-        'export { text as default, text, inject };',
-    ] : [
-        'const text: string;',
-        'export { text as default };'
+const renderModuleDeclaration = (moduleId: string, constants: string[]) => {
+    const name = 'text';
+
+    const declarations = [
+        `const ${name}: string;`,
+        renderConstDeclaration(constants),
+        renderExportDeclaration(name, constants)
     ];
 
-    return `declare module '${path}' {${format(lines)}}`
+    return `declare module '${moduleId}' ${curlyPad(declarations)}`
 };
 
-const format = (lines: string[]) =>
-    '\n' + lines.map(padLeft).join('\n') + '\n';
+const renderConstDeclaration = (args: string[]) =>
+    args.length && `const inject: (map: ${curlyInline(args)}) => string;`;
 
-const padLeft = (line: string) => `    ${line}`;
+const renderExportDeclaration  = (
+    name: string,
+    constants: string[],
+) => 'export ' + curlyInline([
+    `${name} as default`,
+    constants.length && name,
+    constants.length && 'inject',
+]) + ';'

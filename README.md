@@ -2,7 +2,7 @@
 
 - write GLSL in distinct files with the [glslify](https://github.com/glslify/glslify) module system;
 - import them as ES6 modules;
-- inject contants at runtime;
+- inject contants at runtime with automatic static type checking;
 - compatible with linters such as [GLSL Lint](https://github.com/hsimpson/vscode-glsllint#shader-code-in-string-literals).
 
 ## How to install
@@ -11,7 +11,7 @@
 npm install --save-dev vite-plugin-glslify-inject
 ```
 
-In your `vite.config.js`
+In your `vite.config.js`, invoke the plugin, pass in your include/exclude patterns and optionally share a path alias pointing to the location of your shaders if you want `.d.ts` files to be generated.
 
 ```typescript
 import { defineConfig } from 'vite'
@@ -20,32 +20,24 @@ import glsl from 'vite-plugin-glslify-inject'
 export default defineConfig({
     plugins: [
         glsl({
-            include: './src/shaders/*',
+            include: './src/shaders/**/*.(vert|frag)',
             exclude: 'node_modules/**',
+            types: { alias: '@shaders' }
         })
-    ]
+    ],
+    resolve: {
+        alias: {
+          '@shaders': "/src/shaders/",
+        }
+    }
 })
 ```
 
-If you are using Typescript, Add the following `.d.ts` file to your project
-```typescript
-type Inject = (map: Record<string, number>) => string;
-
-declare module '*.vert' {
-    const text: string;
-    const inject: Inject
-    export {text as default, text, inject };
-}
-
-declare module '*.frag' {
-    const text: string;
-    const inject: Inject
-    export {text as default, text, inject };
-}
-```
 
 ## How to use
 In this example we create a material that takes a grayscales texture and styles it with false colors.
+
+### main.ts
 ```typescript
 import passThrough from './shaders/passThrough.vert';
 import * as falseColors from './shaders/falseColors.frag';
@@ -59,6 +51,23 @@ const material = new THREE.RawShaderMaterial({
     fragmentShader: falseColors.inject({ steps })
 });
 ```
+
+The following types are auto generated next to their source and updated live while the dev server is running:
+
+```typescript
+declare module '@shaders/passThrough.vert' {
+    const text: string;
+    export { text as default };
+}
+```
+```typescript
+declare module '@shaders/falseColors.frag' {
+    const text: string;
+    const inject: (map: { steps?: number }) => string;
+    export { text as default, text, inject };
+}
+```
+I also plan to include typings for uniforms.
 
 ### flaseColors.frag
 

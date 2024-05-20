@@ -7,10 +7,11 @@
     "build": "tsc -p ./tsconfig.build.json",
     "test": "jest --watchAll"
   },
-  "types": "./dist/types.d.ts",
+  "main": "./dist/plugin.js",
+  "types": "./dist/plugin.d.ts",
   "exports": {
-    ".": "./dist/index.js",
-    "./inject": "./dist/inject.js"
+    ".": "./dist/plugin.js",
+    "./injectConstants": "./dist/injectConstants/index.js"
   },
   "keywords": [
     "vite",

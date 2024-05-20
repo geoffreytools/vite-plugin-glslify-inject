@@ -1,14 +1,15 @@
-import { transform } from "../src/transform";
+import { transform } from "../src/bundleGlsl/transform";
 import { readFile } from 'node:fs/promises';
 
 test('transform', async () => {
-    const entrypoint = await readFile('./tests/files/entrypoint.glsl')
+    const entrypointPath = './tests/files/entrypoint.glsl';
+    const entrypoint = await readFile(entrypointPath)
         .then(buffer => buffer.toString());
     
     const bundle = await readFile('./tests/files/bundle.js')
         .then(buffer => buffer.toString());
 
-    const transformed = transform(entrypoint, './tests/files/');
+    const transformed = transform(entrypoint, entrypointPath);
 
     expect(transformed).toBe(bundle);
 })

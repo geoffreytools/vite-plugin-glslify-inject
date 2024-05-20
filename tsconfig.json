@@ -8,7 +8,10 @@
         "esModuleInterop": true,
         "noEmit": true,
         "skipLibCheck": true,
-        "baseUrl": "./"
+        "baseUrl": "./",
+        "paths": {
+            "@lib/*": ["src/lib/*"],
+        },
     },
     "include": ["src", "tests"]
 }

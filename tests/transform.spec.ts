@@ -14,7 +14,7 @@ test('transform', async () => {
     expect(transformed).toBe(bundle);
 })
 
-import { text, inject } from './files/bundle.js';
+import { entrypoint as text, inject } from './files/bundle.js';
 
 test('inject() injects variables', async () => {
     const bar = Math.round(Math.random() * 10);

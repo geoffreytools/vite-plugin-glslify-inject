@@ -1,18 +1,22 @@
 import { readFile } from 'node:fs/promises';
 import { getModuleDeclaration, renderModuleDeclaration } from '../src/generateTypes/moduleDeclaration';
 
+const shaderName = 'foo';
+const alias = '@shaders';
+const moduleId = `${alias}/${shaderName}.glsl`;
+
 test('get module declaration from file', async () => {
     const bundle = await readFile('./tests/files/entrypoint.glsl')
         .then(buffer => buffer.toString());
 
-    expect(getModuleDeclaration(bundle, '@shaders/file.glsl'))
-        .toBe(renderModuleDeclaration('@shaders/file.glsl', ['bar?: number']))
+    expect(getModuleDeclaration(bundle, moduleId))
+        .toBe(renderModuleDeclaration(moduleId, ['bar?: number']))
 })
 
 describe('types', () => {
     const macro = (input: string, args: string[]) =>
-        expect(getModuleDeclaration(input, '@shaders/file.glsl'))
-            .toBe(renderModuleDeclaration('@shaders/file.glsl', args));
+        expect(getModuleDeclaration(input, moduleId))
+            .toBe(renderModuleDeclaration(moduleId, args));
         
     test('bool', async () => macro(
         'const bool bar = true;',
@@ -99,13 +103,13 @@ describe('types', () => {
 test('`inject` is included when constants are found', () => {
     const glsl = 'const vec2 bar = vec2(0.0);';
 
-    const declaration = `declare module 'foo' {\n${[
-        '    const text: string;',
+    const declaration = `declare module '${moduleId}' {\n${[
+        `    const ${shaderName}: string;`,
         '    const inject: (map: { bar?: [number, number] }) => string;',
-        '    export { text as default, text, inject };'
+        `    export { ${shaderName} as default, ${shaderName}, inject };`
     ].join('\n')}\n}`;
 
-    expect(getModuleDeclaration(glsl, 'foo')).toBe(declaration)
+    expect(getModuleDeclaration(glsl, moduleId)).toBe(declaration)
 })
 
 test('`inject` is not included when no constants are found', () => {
@@ -117,10 +121,10 @@ test('`inject` is not included when no constants are found', () => {
         }
     `;
 
-    const declaration = `declare module 'foo' {\n${[
-        '    const text: string;',
-        '    export { text as default };'
+    const declaration = `declare module '${moduleId}' {\n${[
+        `    const ${shaderName}: string;`,
+        `    export { ${shaderName} as default };`
     ].join('\n')}\n}`;
 
-    expect(getModuleDeclaration(glsl, 'foo')).toBe(declaration)
+    expect(getModuleDeclaration(glsl, moduleId)).toBe(declaration)
 })

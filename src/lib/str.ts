@@ -1,8 +1,9 @@
-export { mapJoin, curlyInline, parenInline, curlyPad, options, capitalize };
+export { mapJoin, curlyInline, parenInline, curlyPad, options, capitalize, listJoin, displayName };
 
 export type { Showable };
 
 import { flow } from "./fn.js";
+import { basename } from 'node:path'
 
 type Falsy = false | 0 | null | undefined;
 
@@ -24,3 +25,4 @@ const options = flow(listJoin('|'), parenWrap);
 const curlyPad = flow(mapJoin(a => `    ${a}`, '\n'), wrap('{\n', '\n}'));
 
 const capitalize = (a: string) => a[0].toUpperCase() + a.substring(1);
+const displayName = (path: string) => basename(path).split('.')[0];

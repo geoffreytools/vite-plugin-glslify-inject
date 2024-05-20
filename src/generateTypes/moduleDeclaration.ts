@@ -1,6 +1,6 @@
 export { getModuleDeclaration, renderModuleDeclaration };
 
-import { curlyPad, curlyInline } from '@lib/str.js';
+import { curlyPad, curlyInline, displayName } from '@lib/str.js';
 import * as constants from '../translationLayer/constants.js';
 
 const getModuleDeclaration = (code: string, moduleId: string): string => {
@@ -11,7 +11,7 @@ const getModuleDeclaration = (code: string, moduleId: string): string => {
 };
 
 const renderModuleDeclaration = (moduleId: string, constants: string[]) => {
-    const name = 'text';
+    const name = displayName(moduleId);
 
     const declarations = [
         `const ${name}: string;`,

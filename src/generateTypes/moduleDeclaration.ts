@@ -1,6 +1,6 @@
 export { getModuleDeclaration, renderModuleDeclaration };
 
-import { matchDeclarations, constructType } from '../translationLayer.js';
+import { matchDeclarations, constructType } from '../translationLayer/constants.js';
 
 const getModuleDeclaration = (code: string, moduleId: string): string => {
     const matches = matchDeclarations(code)

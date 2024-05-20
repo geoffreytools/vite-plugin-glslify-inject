@@ -1,6 +1,6 @@
 export { injectConstants };
 
-import { replaceDeclaration, constructValue, UserTypes } from '../translationLayer.js';
+import { replaceDeclaration, constructValue, UserTypes } from '../translationLayer/constants.js';
 
 const injectConstants = (shader: string) => (values: Record<string, UserTypes>) => (
     !values ? shader

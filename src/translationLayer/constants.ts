@@ -1,5 +1,7 @@
 export { matchDeclarations, replaceDeclaration, constructValue, constructType, UserTypes };
 
+import { Vec, Mat, matchDeclarationsFactory } from './utils.js';
+
 type GlslTypes = keyof TypesMap;
 type UserTypes = TypesMap[GlslTypes];
 
@@ -15,25 +17,23 @@ type TypesMap = {
     bool: Bool,
     int: Int,
     float: Float,
+
     bvec2: Vec<2, Bool>,
     bvec3: Vec<3, Bool>,
     bvec4: Vec<4, Bool>,
+
     ivec2: Vec<2, Int>,
     ivec3: Vec<3, Int>,
     ivec4: Vec<4, Int>,
+
     vec2: Vec<2, Float>,
     vec3: Vec<3, Float>,
     vec4: Vec<4, Float>,
+
     mat2: Mat<2>,
     mat3: Mat<3>,
     mat4: Mat<4>
 };
-
-const Mat = (length: number) =>
-    `[${ Array.from({length}, () => Vec(length, 'number')).join(', ') }]`;
-
-const Vec = <T>(length: number, val: T,) =>
-    `[${ Array.from({length}, () => val).join(', ') }]`;
 
 const constructType = (type: GlslTypes) => {
     if (type in typeConstructors) return typeConstructors[type as GlslTypes];
@@ -44,15 +44,19 @@ const typeConstructors: Record<GlslTypes, string> = {
     bool: 'boolean',
     int: 'number',
     float: 'number',
+
     bvec2: Vec(2, 'boolean'),
     bvec3: Vec(3, 'boolean'),
     bvec4: Vec(4, 'boolean'),
+
     ivec2: Vec(2, 'number'),
     ivec3: Vec(3, 'number'),
     ivec4: Vec(4, 'number'),
+
     vec2: Vec(2, 'number'),
     vec3: Vec(3, 'number'),
     vec4: Vec(4, 'number'),
+
     mat2: Mat(2),
     mat3: Mat(3),
     mat4: Mat(4)
@@ -85,19 +89,19 @@ const valueConstructors = {
     bool: bool,
     int: int,
     float: float,
-  
-    vec2: vec(2),
-    vec3: vec(3),
-    vec4: vec(4),
-  
-    ivec2: ivec(2),
-    ivec3: ivec(3),
-    ivec4: ivec(4),
-  
+
     bvec2: bvec(2),
     bvec3: bvec(3),
     bvec4: bvec(4),
-  
+
+    ivec2: ivec(2),
+    ivec3: ivec(3),
+    ivec4: ivec(4),
+
+    vec2: vec(2),
+    vec3: vec(3),
+    vec4: vec(4),
+
     mat2: mat(2),
     mat3: mat(3),
     mat4: mat(4),
@@ -107,9 +111,7 @@ const declaration = new RegExp(`^(\\s*)const (${glslTypes.join('|')}) (.+?) = .+
 
 type DeclarationMatches = [type: GlslTypes, name: string];
 
-const matchDeclarations = (code: string) =>
-    Array.from(code.matchAll(declaration))
-        .map(([,, type, name]) => [type, name]) as unknown as DeclarationMatches[]
+const matchDeclarations = matchDeclarationsFactory<DeclarationMatches>(declaration);
 
 const replaceDeclaration = (
     code: string,

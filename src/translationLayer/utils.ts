@@ -1,10 +1,12 @@
-export { Vec, Mat, matchDeclarationsFactory }
+export { Vec, Mat, matchDeclarationsFactory, Size }
 
-const Vec = <T>(length: number, val: T,) =>
-    `[${ Array.from({length}, () => val).join(', ') }]`;
+type Size = 2 | 3 | 4;
 
-const Mat = (length: number) =>
-    `[${ Array.from({length}, () => Vec(length, 'number')).join(', ') }]`;
+const Vec = <T>(size: Size, val: T,) =>
+    `[${ Array.from({length: size}, () => val).join(', ') }]`;
+
+const Mat = (size: Size) =>
+    `[${ Array.from({length: size}, () => Vec(size, 'number')).join(', ') }]`;
 
 const matchDeclarationsFactory = <T>(reg: RegExp) => (code: string) =>
     Array.from(code.matchAll(reg))

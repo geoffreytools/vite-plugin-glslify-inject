@@ -1,12 +1,11 @@
 export { matchDeclarations, replaceDeclaration, constructValue, constructType, UserTypes };
 
 import { Showable, options, parenInline } from '@lib/str.js';
-import { Vec, Mat, matchDeclarationsFactory } from './utils.js';
+import { Vec, Mat, matchDeclarationsFactory, Size } from './utils.js';
 
 type ConstTypes = keyof TypesMap;
 type UserTypes = TypesMap[ConstTypes];
 
-type Size = 2 | 3 | 4;
 type Bool = boolean;
 type Int = number;
 type Float = number;

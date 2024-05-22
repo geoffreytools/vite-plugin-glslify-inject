@@ -1,13 +1,7 @@
-export { Vec, Mat, matchDeclarationsFactory, Size }
+export { Vec, Mat }
 
-type Size = 2 | 3 | 4;
-
-const Vec = <T>(size: Size, val: T,) =>
+const Vec = <T>(size: number, val: T,) =>
     `[${ Array.from({length: size}, () => val).join(', ') }]`;
 
-const Mat = (size: Size) =>
+const Mat = (size: number) =>
     `[${ Array.from({length: size}, () => Vec(size, 'number')).join(', ') }]`;
-
-const matchDeclarationsFactory = <T>(reg: RegExp) => (code: string) =>
-    Array.from(code.matchAll(reg))
-        .map(([,, type, name]) => [type, name]) as unknown as T[]

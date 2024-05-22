@@ -11,7 +11,7 @@ const transform = (code: string, path: string) => {
     const compiled = compile(code, { basedir });
 
     return listJoin('\n')([
-        `export { ${name} as default, ${name}, inject };`,
+        `export { ${name} as default, ${name} as glsl, ${name}, inject };`,
         `import { injectConstants } from 'vite-plugin-glslify-inject/injectConstants';`,
         `const ${name} = ${JSON.stringify(compiled)};`,
         `const inject = injectConstants(${name});`

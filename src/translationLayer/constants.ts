@@ -1,17 +1,18 @@
 export { matchDeclarations, replaceDeclaration, constructValue, constructType, UserTypes };
 
 import { Showable, options, parenInline } from '@lib/str.js';
-import { Vec, Mat, matchDeclarationsFactory, Size } from './utils.js';
+import { Vec, Mat } from './utils.js';
+import type { Tuple } from '@lib/list.js';
 
 type ConstTypes = keyof TypesMap;
 type UserTypes = TypesMap[ConstTypes];
 
+type Size = 2 | 3 | 4;
 type Bool = boolean;
 type Int = number;
 type Float = number;
 type Mat<S extends number> = Vec<S, Vec<S, number>>;
-type Vec <L extends number, T = unknown, R extends any[] = []> =
-    R['length'] extends L ? R : Vec<L, T, [T, ...R]>;
+type Vec<L extends number, T> = Tuple<L, T>;
 
 type TypesMap = {
     bool: Bool,
@@ -114,7 +115,10 @@ const declaration = new RegExp(`^(\\s*)const ${options(constTypes)} (.+?) = .+?;
 
 type DeclarationMatches = [type: ConstTypes, name: string];
 
-const matchDeclarations = matchDeclarationsFactory<DeclarationMatches>(declaration);
+const matchDeclarations = (code: string) =>
+    Array.from(code.matchAll(declaration))
+         .map(([,, type, name]) =>
+            [type, name] as unknown as DeclarationMatches);
 
 const replaceDeclaration = (
     code: string,

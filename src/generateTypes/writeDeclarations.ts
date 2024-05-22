@@ -1,22 +1,25 @@
+export { readSource, writeDeclarations, removeDeclaration, updateDeclaration };
+
 import { writeFile, readFile, unlink } from 'node:fs/promises';
 import { listFiles } from "./listFiles.js"
 import { getModuleDeclaration } from './moduleDeclaration.js';
 import { getModuleId } from './paths.js';
-
-export { readSource, writeDeclarations, removeDeclaration, updateDeclaration };
+import { Library } from '../translationLayer/uniforms.js';
 
 const writeDeclarations = (
     baseDir: string,
     localPath: string,
     alias: string,
-    filter: (a: string) => boolean
+    filter: (a: string) => boolean,
+    library?: Library,
+    uniforms?: boolean
 ) => listFiles(baseDir).then(paths => {
     const candidates = paths.filter(filter).map(path => {
         const moduleId = getModuleId(localPath, alias, path);
         return readSource(path).then(code =>[path, moduleId, code])
     });
     Promise.allSettled(candidates).then(matchAll(
-        ([path, moduleId, code]) => writeDeclaration(path, moduleId)(code),
+        ([path, moduleId, code]) => writeDeclaration(path, moduleId, library, uniforms)(code),
         console.error
     ))
 });
@@ -36,15 +39,15 @@ const readSource = (path: string) => (
     readFile(path).then(buffer => buffer.toString())
 );
 
-const writeDeclaration = (path: string, moduleId: string) => (code: string) => {
-    const moduleDeclaration = getModuleDeclaration(code, moduleId);
+const writeDeclaration = (path: string, moduleId: string, library?: Library, uniforms?: boolean) => (code: string) => {
+    const moduleDeclaration = getModuleDeclaration(code, moduleId, library, uniforms);
     writeFile(path + '.d.ts', moduleDeclaration);
 };
 
-const updateDeclaration = (localPath: string, alias: string) => (path: string) => {
+const updateDeclaration = (localPath: string, alias: string, library?: Library, uniforms?: boolean) => (path: string) => {
     if(path.endsWith('.d.ts')) return;
     const moduleId = getModuleId(localPath, alias, path);
-    readSource(path).then(writeDeclaration(path, moduleId));
+    readSource(path).then(writeDeclaration(path, moduleId, library, uniforms));
 };
 
 const removeDeclaration = (path: string) => {

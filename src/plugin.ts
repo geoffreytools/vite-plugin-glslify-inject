@@ -6,15 +6,19 @@ import { FilterPattern, createFilter } from '@rollup/pluginutils';
 import { transform } from './bundleGlsl/transform.js';
 import { resolveAliasConfig } from './generateTypes/paths.js';
 import { writeDeclarations, removeDeclaration, updateDeclaration } from './generateTypes/writeDeclarations.js';
+import THREE from './translationLayer/THREE.js';
+import { Library } from './translationLayer/uniforms.js';
 
 type Options = {
     include?: FilterPattern,
     exclude?: FilterPattern,
-    types?: { alias: string }
+    types?: { alias: string, library?: Library | 'threejs', uniforms?: boolean }
 };
 
 const plugin = ({ include, exclude, types }: Options = {}): Plugin => {
     const filter = createFilter(include || [/\.vert$/, /\.frag$/], exclude);
+    const library = types?.library === 'threejs' ? THREE : types?.library;
+    const config = [library, types?.uniforms] as const;
 
     return {
         name: 'vite-plugin-glslify-inject',
@@ -27,10 +31,10 @@ const plugin = ({ include, exclude, types }: Options = {}): Plugin => {
                 const localPath = aliasMap[alias]
                 const baseDir = path.join(server.config.root, localPath);
 
-                writeDeclarations(baseDir, localPath, alias, filter);
+                writeDeclarations(baseDir, localPath, alias, filter, ...config);
 
-                server.watcher.on('change', updateDeclaration(localPath, alias));
-                server.watcher.on('add', updateDeclaration(localPath, alias));
+                server.watcher.on('change', updateDeclaration(localPath, alias, ...config));
+                server.watcher.on('add', updateDeclaration(localPath, alias, ...config));
                 server.watcher.on('unlink', removeDeclaration);
             }
         },

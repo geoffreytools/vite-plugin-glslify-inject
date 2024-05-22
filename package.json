@@ -21,7 +21,9 @@
     "glsl",
     "glslify",
     "import",
-    "constants"
+    "constants",
+    "types",
+    "typescript"
   ],
   "files": [
     "dist"

@@ -1,8 +1,8 @@
 export { matchDeclarations, replaceDeclaration, constructValue, constructType, UserTypes };
 
-import { Showable, options, parenInline } from '@lib/str.js';
+import { Showable, options, parenInline } from '#lib/str.js';
 import { Vec, Mat } from './utils.js';
-import type { Tuple } from '@lib/list.js';
+import type { Tuple } from '#lib/list.js';
 
 type ConstTypes = keyof TypesMap;
 type UserTypes = TypesMap[ConstTypes];

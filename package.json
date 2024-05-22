@@ -13,6 +13,9 @@
     ".": "./dist/plugin.js",
     "./injectConstants": "./dist/injectConstants/index.js"
   },
+  "imports": {
+    "#lib/*": "./dist/lib/*"
+  },
   "keywords": [
     "vite",
     "glsl",

@@ -10,7 +10,7 @@
         "skipLibCheck": true,
         "baseUrl": "./",
         "paths": {
-            "@lib/*": ["src/lib/*"],
+            "#lib/*": ["src/lib/*"],
         },
     },
     "include": ["src", "tests"]

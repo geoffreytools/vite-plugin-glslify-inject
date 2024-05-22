@@ -1,6 +1,6 @@
 export { getModuleDeclaration, renderModuleDeclaration };
 
-import { curlyPad, curlyInline, capitalize, displayName, listJoin, } from '@lib/str.js';
+import { curlyPad, curlyInline, capitalize, displayName, listJoin, } from '#lib/str.js';
 import * as Constants from '../translationLayer/constants.js';
 import * as Uniforms from '../translationLayer/uniforms.js';
 
@@ -11,7 +11,7 @@ const getModuleDeclaration = (
     uniformsWasSet?: boolean
 ): string => {
     const generateUniforms = uniformsWasSet === undefined ? true : uniformsWasSet;
-    
+
     const constants = Constants.matchDeclarations(code)
         .map(([type, name]) => `${name}?: ${Constants.constructType(type)}`);
 

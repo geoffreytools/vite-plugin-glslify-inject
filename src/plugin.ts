@@ -18,7 +18,6 @@ type Options = {
 const plugin = ({ include, exclude, types }: Options = {}): Plugin => {
     const filter = createFilter(include || [/\.vert$/, /\.frag$/], exclude);
     const library = types?.library === 'threejs' ? THREE : types?.library;
-    const config = [library, types?.uniforms] as const;
 
     return {
         name: 'vite-plugin-glslify-inject',
@@ -28,14 +27,14 @@ const plugin = ({ include, exclude, types }: Options = {}): Plugin => {
 
             if(generateDeclarations) {
                 const aliasMap = resolveAliasConfig(server.config.resolve.alias);
-                const localPath = aliasMap[alias]
-                const baseDir = path.join(server.config.root, localPath);
+                const baseDir = path.join(server.config.root, aliasMap[alias]);
+                const deps = [aliasMap[alias], alias, filter, library, types?.uniforms] as const;
 
-                writeDeclarations(baseDir, localPath, alias, filter, ...config);
+                writeDeclarations(baseDir, ...deps);
 
-                server.watcher.on('change', updateDeclaration(localPath, alias, ...config));
-                server.watcher.on('add', updateDeclaration(localPath, alias, ...config));
-                server.watcher.on('unlink', removeDeclaration);
+                server.watcher.on('change', updateDeclaration(...deps));
+                server.watcher.on('add', updateDeclaration(...deps));
+                server.watcher.on('unlink', removeDeclaration(filter));
             }
         },
         transform (code, path) {

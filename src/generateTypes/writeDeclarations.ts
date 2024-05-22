@@ -6,11 +6,13 @@ import { getModuleDeclaration } from './moduleDeclaration.js';
 import { getModuleId } from './paths.js';
 import { Library } from '../translationLayer/uniforms.js';
 
+type Filter = (a: string) => boolean;
+
 const writeDeclarations = (
     baseDir: string,
     localPath: string,
     alias: string,
-    filter: (a: string) => boolean,
+    filter: Filter,
     library?: Library,
     uniforms?: boolean
 ) => listFiles(baseDir).then(paths => {
@@ -44,13 +46,13 @@ const writeDeclaration = (path: string, moduleId: string, library?: Library, uni
     writeFile(path + '.d.ts', moduleDeclaration);
 };
 
-const updateDeclaration = (localPath: string, alias: string, library?: Library, uniforms?: boolean) => (path: string) => {
-    if(path.endsWith('.d.ts')) return;
+const updateDeclaration = (localPath: string, alias: string, filter: Filter, library?: Library, uniforms?: boolean) => (path: string) => {
+    if(!filter(path) || path.endsWith('.d.ts')) return;
     const moduleId = getModuleId(localPath, alias, path);
     readSource(path).then(writeDeclaration(path, moduleId, library, uniforms));
 };
 
-const removeDeclaration = (path: string) => {
-    if(path.endsWith('.d.ts')) return;
+const removeDeclaration = (filter: Filter) => (path: string) => {
+    if(!filter(path) || path.endsWith('.d.ts')) return;
     unlink(path + '.d.ts');
 };

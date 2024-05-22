@@ -129,7 +129,7 @@ void main() {
 
 ### output types
 
-The following types are auto generated next to their source and updated live while the dev server is running:
+The following types are auto generated next to their source and updated live while the dev server is running. A variety of exports are available to enable different import patterns.
 
 ```typescript
 declare module '@shaders/passThrough.vert' {
@@ -162,9 +162,7 @@ declare module '@shaders/falseColors.frag' {
 }
 ```
 
-The bulk of it is related to uniforms so, if you don't need them, feel free to set `uniforms: false` in the config (see [How to set up](#how-to-set-up)).
-
-A variety of exports are available to enable different import patterns.
+See [How to set up](#how-to-set-up) to control this output.
 
 ## How to set up
 
@@ -172,7 +170,7 @@ A variety of exports are available to enable different import patterns.
 npm install --save-dev vite-plugin-glslify-inject
 ```
 
-In your `vite.config.js`, invoke the plugin, pass in your include/exclude patterns and optionally share a path alias pointing to the location of your shaders if you want `.d.ts` files to be generated.
+In your `vite.config.js`, invoke the plugin, pass in your include/exclude patterns and optionally share a path alias pointing to the location of your shaders if you want `.d.ts` files to be generated, and a library preset or configuration to contrl this output.
 
 ```typescript
 import { defineConfig } from 'vite'
@@ -218,10 +216,11 @@ You can inject custom types using the `types` fields in the configuration. Each 
 
 ### Base types
 
-Here are a few ways you could add a `vec2` type definition for the trivial shader `uniform vec foo;`. The choice of variant only affects tooltips.
+Here are a few ways you could add a `vec2` type definition for the trivial shader `uniform vec2 foo;`. The choice of variant only affects tooltips.
 
 #### Inline
 ```typescript
+// config
 library: {
     types: {
         vec2: ['{ x: number, y: number, isVector2: true }']
@@ -230,6 +229,7 @@ library: {
 ```
 
 ```typescript
+// output
 type Uniforms = {
     foo: [number, number] | Float32Array | { x: number, y: number, isVector2: true }
 };
@@ -237,6 +237,7 @@ type Uniforms = {
 
 #### Alias
 ```typescript
+// config
 library: {
     types: {
         vec2: [{
@@ -248,6 +249,7 @@ library: {
 ```
 
 ```typescript
+// output
 type Vector2 = { x: number, y: number, isVector2: true };
 type Uniforms = {
     foo: [number, number] | Float32Array | Vector2
@@ -257,6 +259,7 @@ type Uniforms = {
 #### Namespaced alias
 
 ```typescript
+// config
 library: {
     namespace: 'THREE'
     types: {
@@ -269,6 +272,7 @@ library: {
 ```
 
 ```typescript
+// output
 namespace THREE {
     export type Vector2 = { x: number, y: number, isVector2: true };
 }
@@ -284,6 +288,7 @@ The plugin can handle the nesting of types in arrays for you, but your library d
 Here is an example for `uniform vec2 foo[2]`:
 
 ```typescript
+// config
 library: {
     nesting: true,
     types: {
@@ -296,6 +301,7 @@ library: {
 ```
 
 ```typescript
+// output
 type Vector2 = { x: number, y: number, isVector2: true };
 type Uniforms = {
     foo: [number, number, number, number] | Float32Array |  [[number, number],  [number, number]][Vector2, Vector2]

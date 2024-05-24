@@ -27,7 +27,7 @@ In this example we create a material that takes a grayscales texture and styles 
 import passThrough from '@shaders/passThrough.vert';
 import { falseColorsWith, FalseColorsUniforms } from '@shaders/falseColors.frag';
 
-const gradient = ["#00178f", "#006172", "#47dd00"];
+const gradient = ["#00178f", "#006172", "#47dd00"] as const;
 const steps = gradient.length;
 
 const material = new THREE.RawShaderMaterial({

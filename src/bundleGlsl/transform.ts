@@ -27,5 +27,5 @@ const renderExportDeclaration = (name: string) => {
         `inject as ${name}With`
     ].filter(Boolean);
 
-    return `export ${curlyDynamic(lines, 2)};`
+    return `export ${curlyDynamic(lines, 1)};`
 }

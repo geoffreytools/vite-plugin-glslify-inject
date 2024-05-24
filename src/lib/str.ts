@@ -1,4 +1,4 @@
-export { mapJoin, curlyInline, parenInline, squareInline, curlyPad, options, capitalize, listJoin, displayName, wrap, unwrap };
+export { mapJoin, curlyInline, parenInline, squareInline, curlyPad, curlyDynamic, options, capitalize, listJoin, displayName, wrap, unwrap };
 
 export type { Showable };
 
@@ -31,6 +31,8 @@ const curlyPad = (lines: Showable[], sep: string = '', rep = 1) => pipe(
     mapJoin(a => '    '.repeat(rep) + a, sep + '\n'),
     wrap('{\n', '\n'+ '    '.repeat(rep - 1) + '}')
 );
+const curlyDynamic = (lines: Showable[], pad = 1) =>
+    lines.length > 3 ? curlyPad(lines, ',', pad) : curlyInline(lines)
 
 const capitalize = (a: string) => a[0].toUpperCase() + a.substring(1);
 const displayName = (path: string) => basename(path).split('.')[0];

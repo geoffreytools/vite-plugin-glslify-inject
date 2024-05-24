@@ -1,6 +1,6 @@
 export { getModuleDeclaration, renderModuleDeclaration };
 
-import { curlyPad, curlyInline, capitalize, displayName, listJoin, } from '#lib/str.js';
+import { curlyPad, curlyInline, capitalize, displayName, listJoin, curlyDynamic, } from '#lib/str.js';
 import * as Constants from '../translationLayer/constants.js';
 import * as Uniforms from '../translationLayer/uniforms.js';
 
@@ -93,9 +93,5 @@ const renderExportDeclaration  = (
         uniforms.length && `Uniforms as ${capitalize(name)}Uniforms`
     ].filter(Boolean);
 
-    return [
-        'export ',
-        lines.length > 3 ? curlyPad(lines, ',', 2) : curlyInline(lines),
-        ';'
-    ].join('')
+    return `export ${curlyDynamic(lines, 2)};`
 }

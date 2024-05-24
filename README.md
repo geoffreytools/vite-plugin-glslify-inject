@@ -1,16 +1,23 @@
 # vite-plugin-glslify-inject
 
-[How to use](#how-to-use)
+[Why](#why)
+| [How to use](#how-to-use)
+| [Output](#output)
 | [How to set up](#how-to-set-up)
-| [Documentation](#documentation)
 
-- write GLSL in distinct files with the [glslify](https://github.com/glslify/glslify) module system;
-- import them as ES6 modules;
-- inject contants at runtime;
-- compatible with linters such as [GLSL Lint](https://github.com/hsimpson/vscode-glsllint#shader-code-in-string-literals);
-- auto-generation of TS types for your modules, constants and uniforms.
+- Write GLSL in distinct files with the [glslify](https://github.com/glslify/glslify) module system;
+- Import them as ES6 modules;
+- Inject contants at runtime;
+- Auto-generate TS types for your modules, constants and uniforms;
+- Compatible with linters such as [GLSL Lint](https://github.com/hsimpson/vscode-glsllint#shader-code-in-string-literals).
 
+## Why
 
+Organising code in distinct files and dedicated file types is a matter of preference.
+
+This plugin enables a setup where you keep GLSL seperate from your JS while having all the advantages of glslify module resolution and runtime code injection, without having to deal with string interpolation, potentially loosing GLSL linting in the process, and in what I consider a cleaner format.
+
+Getting TS types for your uniforms at the TS/GLSL interface is also nice to have. You probably already do it for other APIs.
 
 ## How to use
 In this example we create a material that takes a grayscales texture and styles it with false colors.
@@ -24,11 +31,12 @@ const gradient = ["#00178f", "#006172", "#47dd00"];
 const steps = gradient.length;
 
 const material = new THREE.RawShaderMaterial({
-    uniforms: parseUniforms({ gradient, myTexture }) satisfies FalseColorsUniforms,
+    uniforms: parseUniforms<FalseColorsUniforms>()({ gradient, myTexture }),
     vertexShader: passThrough,
     fragmentShader: falseColorsWith({ steps })
 });
 ```
+I don't detail `parseUniforms` but even with a library like threejs you probably do some processing on your uniforms before passing them to your material.
 
 ### flaseColors.frag
 
@@ -82,8 +90,9 @@ vec3 interColor (vec3 gradient[4], float t) {
 
 // [...]
 ```
+## Output
 
-### output value
+### Runtime values
 At current, precision specifiers are not deduplicated and there is no compile-time check to see if they are consistent.
 
 ```glsl
@@ -127,29 +136,34 @@ void main() {
 }
 ```
 
-### output types
+### Types
 
 The following types are auto generated next to their source and updated live while the dev server is running. A variety of exports are available to enable different import patterns.
 
 ```typescript
 declare module '@shaders/passThrough.vert' {
     const passThrough: string;
+
     export { passThrough as default, passThrough as glsl, passThrough };
 }
 ```
 ```typescript
-namespace THREE {
-    export type Vector3 = { x: number, y: number, z: number, isVector3: true };
-    export type Color = { r: number, g: number, b: number, isColor: true };
-    export type Texture = { image: unknown, isTexture: true, isCubeTexture?: never };
-}
-declare module '@shaders/falseColors.frag' {
+declare module '#shaders/falseColors.frag' {
+    namespace THREE {
+        export type Vector3 = { x: number, y: number, z: number, isVector3: true };
+        export type Color = { r: number, g: number, b: number, isColor: true };
+        export type Texture = { image: unknown, isTexture: true, isCubeTexture?: never };
+    }
+
     const falseColors: string;
+
     const inject: (map: { steps?: number }) => string;
+
     type Uniforms = {
-        gradient: [number, number, number, number, number, number, number, number, number] | Float32Array | [[number, number, number], [number, number, number], [number, number, number]] | [THREE.Vector3, THREE.Vector3, THREE.Vector3] | [THREE.Color, THREE.Color, THREE.Color];
+        gradient: Array<number> | Float32Array | Array<[number, number, number]> | Array<THREE.Vector3> | Array<THREE.Color>,
         myTexture: WebGLTexture | THREE.Texture
     };
+
     export {
         falseColors as default,
         falseColors as glsl,
@@ -161,6 +175,7 @@ declare module '@shaders/falseColors.frag' {
     };
 }
 ```
+Because `gradient` is an array which length is defined by a constant, and because constants can be injected at runtime, `Uniform.gradient` lists array types instead of tuples.
 
 See [How to set up](#how-to-set-up) to control this output.
 
@@ -170,7 +185,11 @@ See [How to set up](#how-to-set-up) to control this output.
 npm install --save-dev vite-plugin-glslify-inject
 ```
 
-In your `vite.config.js`, invoke the plugin, pass in your include/exclude patterns and optionally share a path alias pointing to the location of your shaders if you want `.d.ts` files to be generated, and a library preset or configuration to contrl this output.
+The `vite.config.js` corresponding to the above example:
+- we invoke the plugin;
+- we pass in your include/exclude patterns;
+- we pass a path alias pointing to the location of your shaders for `.d.ts` modules to be generated;
+- we pass a library preset to generate threejs types (in addition to native types) for uniforms.
 
 ```typescript
 import { defineConfig } from 'vite'
@@ -206,19 +225,33 @@ glsl({
 ### Libraries
 You are likely using a library which bundles your uniforms for you and enables higher level data structures than flat/typed arrays, hence the `library` field.
 
-In the example above we pass in the string `threejs`. I *may* add types for other libraries, but you can also inject your own types (see [Documentation](#documentation)).
+In the example above we pass in the string `threejs`. I *may* add types for other libraries, but you can also inject your own types using the `types` fields in the configuration.
 
-## Documentation
+#### Array types
 
-You can inject custom types using the `types` fields in the configuration. Each GLSL type accepts an array of TS types.
+The plugin can handle the nesting of types in arrays for you, but your library definition needs to opt-in for it. It is the case of the built-in `threejs` for example.
 
-> They only need to be specific enough to be safe. Don't copy and paste the whole definitions.
+Here is a minimal example for the trivial shader `uniform vec2 foo[2]`:
 
-### Base types
+```typescript
+// config
+library: { nesting: true }
+```
+
+```typescript
+// output
+type Uniforms = {
+    foo: [number, number, number, number] | Float32Array |  [[number, number],  [number, number]]
+};
+```
+
+#### Base types
+
+The `library` field takes a `types` field which is a record of type definition lists. Each GLSL type accepts an array of TS types (they only need to be specific enough to be safe. Don't copy and paste the whole definitions).
 
 Here are a few ways you could add a `vec2` type definition for the trivial shader `uniform vec2 foo;`. The choice of variant only affects tooltips.
 
-#### Inline
+##### Inline
 ```typescript
 // config
 library: {
@@ -235,7 +268,7 @@ type Uniforms = {
 };
 ```
 
-#### Alias
+##### Alias
 ```typescript
 // config
 library: {
@@ -256,7 +289,7 @@ type Uniforms = {
 };
 ```
 
-#### Namespaced alias
+##### Namespaced alias
 
 ```typescript
 // config
@@ -278,32 +311,5 @@ namespace THREE {
 }
 type Uniforms = {
     foo: [number, number] | Float32Array | THREE.Vector2
-};
-```
-
-### Array types
-
-The plugin can handle the nesting of types in arrays for you, but your library definition needs to opt-in for it. It is the case of the built-in `threejs` for example.
-
-Here is an example for `uniform vec2 foo[2]`:
-
-```typescript
-// config
-library: {
-    nesting: true,
-    types: {
-        vec2: [{
-            alias: 'Vector2',
-            type: '{ x: number, y: number, isVector2: true }'
-        }]
-    }
-}
-```
-
-```typescript
-// output
-type Vector2 = { x: number, y: number, isVector2: true };
-type Uniforms = {
-    foo: [number, number, number, number] | Float32Array |  [[number, number],  [number, number]][Vector2, Vector2]
 };
 ```

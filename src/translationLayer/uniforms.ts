@@ -1,7 +1,7 @@
 export { matchDeclarations, constructType };
 export type { Keys, Library };
 
-import { listJoin, squareInline, unwrap } from '#lib/str.js';
+import { listJoin, squareInline, wrap, unwrap } from '#lib/str.js';
 import { groupBy, repeat } from '#lib/list.js';
 import { flow, pipe } from '#lib/fn.js';
 import { Vec } from './utils.js';
@@ -17,13 +17,15 @@ const constructType = (type: Keys, length: number, lib: Library) => {
     if (!length) return listJoin(' | ')([...nativeTypes[type], ...libraryTypes]);
 
     const { standalone=[], repeatable=[] } = groupBy(nativeTypes[type], splitByRepeatability);
-    
     const { tuple=[], naked=[] } = groupBy(repeatable, splitByTupleness);
+    const wrapper = length === Infinity ? wrap('Array<', '>') : tupleRepeat(length);
+    const wrappedNativeNaked = naked.length && pipe(naked, listJoin(' | '), wrapper);
+    const wrappedNativeTuple = lib.nesting ? tuple.map(wrapper) : [];
+    const wrappedLib = lib.nesting ? libraryTypes.map(wrapper) : [] ;
 
-    const wrappedNativeTuple = lib.nesting ? tuple.map(tupleRepeat(length)) : [];
-    const flatennedNativeTuple = tuple.map(flow(unwrap, repeat(length), squareInline));
-    const wrappedNativeNaked = naked.length && pipe(naked, listJoin(' | '), tupleRepeat(length));
-    const wrappedLib = lib.nesting ? libraryTypes.map(tupleRepeat(length)) : [] ;
+    const flatennedNativeTuple = length === Infinity
+        ? tuple.length ? ['Array<number>'] : []
+        : tuple.map(flow(unwrap, repeat(length), squareInline));
 
     return listJoin(' | ')([
         wrappedNativeNaked,
@@ -73,14 +75,16 @@ const nativeTypes = {
 type Keys = keyof typeof nativeTypes;
 const keys = Object.keys(nativeTypes) as Keys[];
 
-const declaration = new RegExp(`^(\\s*)uniform (${keys.join('|')}) (\\w+?)(?:\\[(\\d)\\])*;`, 'gm');
+const declaration = new RegExp(`^(\\s*)uniform (${keys.join('|')}) (\\w+?)(?:\\[(.+?)\\])*;`, 'gm');
 
 type UniformMatches = [type: Keys, name: string, length: number];
 
 const matchDeclarations = (code: string) =>
     Array.from(code.matchAll(declaration))
-         .map(([,, type, name, length]) =>
-            [type, name, length ? Number(length) : 0] as unknown as UniformMatches);
+         .map(([,, type, name, length]) => {
+            const size = !length ? 0 : Number(length) || Infinity;
+            return [type, name, size] as unknown as UniformMatches
+        });
 
 type Library = { namespace?: string, types?: { [K in Keys]?: LibraryType[] }, nesting?: boolean };
 

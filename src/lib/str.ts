@@ -1,4 +1,4 @@
-export { mapJoin, curlyInline, parenInline, squareInline, curlyPad, options, capitalize, listJoin, displayName, unwrap };
+export { mapJoin, curlyInline, parenInline, squareInline, curlyPad, options, capitalize, listJoin, displayName, wrap, unwrap };
 
 export type { Showable };
 

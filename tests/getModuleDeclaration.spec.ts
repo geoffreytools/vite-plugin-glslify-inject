@@ -300,6 +300,23 @@ describe('uniforms', () => {
                 ["foo: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number] | Float32Array"],
             );
         })
+
+        describe('dynamic array length', () => {
+            testNative(
+                `uniform int foo[bar];`,
+                ['foo: Array<number>']
+            );
+    
+            testNative(
+                `uniform vec2 foo[bar];`,
+                ['foo: Array<number> | Float32Array']
+            );
+    
+            testNative(
+                `uniform vec3 foo[bar];`,
+                ['foo: Array<number> | Float32Array']
+            );
+        })
     })
 
     describe('custom types', () => {
@@ -332,6 +349,10 @@ describe('uniforms', () => {
     })
     
     describe('threejs types', () => {
+        const Vector2 = 'export type Vector2 = { x: number, y: number, isVector2: true };';
+        const Vector3 = 'export type Vector3 = { x: number, y: number, z: number, isVector3: true };';
+        const Color = 'export type Color = { r: number, g: number, b: number, isColor: true };';
+
         describe('namespace has no duplicates', () => {
             testWithTHREE(
                 `
@@ -342,7 +363,7 @@ describe('uniforms', () => {
                     "foo: [number, number] | Float32Array | THREE.Vector2",
                     "bar: [number, number] | Float32Array | THREE.Vector2"
                 ],
-                ['export type Vector2 = { x: number, y: number, isVector2: true };']
+                [Vector2]
             );
         })
 
@@ -350,25 +371,19 @@ describe('uniforms', () => {
             testWithTHREE(
                 `uniform vec2 foo;`,
                 ["foo: [number, number] | Float32Array | THREE.Vector2"],
-                ['export type Vector2 = { x: number, y: number, isVector2: true };']
+                [Vector2]
             );
     
             testWithTHREE(
                 `uniform vec3 foo;`,
                 ["foo: [number, number, number] | Float32Array | THREE.Vector3 | THREE.Color"],
-                [
-                    'export type Vector3 = { x: number, y: number, z: number, isVector3: true };',
-                    'export type Color = { r: number, g: number, b: number, isColor: true };'
-                ]
+                [Vector3, Color]
             );
 
             testWithTHREE(
                 `uniform vec3 foo[2];`,
                 ["foo: [number, number, number, number, number, number] | Float32Array | [[number, number, number], [number, number, number]] | [THREE.Vector3, THREE.Vector3] | [THREE.Color, THREE.Color]"],
-                [
-                    'export type Vector3 = { x: number, y: number, z: number, isVector3: true };',
-                    'export type Color = { r: number, g: number, b: number, isColor: true };'
-                ]
+                [Vector3, Color]
             );
     
             testWithTHREE(
@@ -414,6 +429,19 @@ describe('uniforms', () => {
                 `uniform mat4 foo[2];`,
                 ['foo: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number] | Float32Array | [[number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number], [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]] | [[[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]], [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]] | [THREE.Matrix4, THREE.Matrix4]'],
                 ['export type Matrix4 = { elements: number[], setFromMatrix3: unknown };']
+            );
+        })
+        describe('dynamic array length', () => {
+            testWithTHREE(
+                `uniform vec2 foo[bar];`,
+                ['foo: Array<number> | Float32Array | Array<[number, number]> | Array<THREE.Vector2>'],
+                [Vector2]
+            );
+
+            testWithTHREE(
+                `uniform vec3 foo[bar];`,
+                ['foo: Array<number> | Float32Array | Array<[number, number, number]> | Array<THREE.Vector3> | Array<THREE.Color>'],
+                [Vector3, Color]
             );
         })
     })

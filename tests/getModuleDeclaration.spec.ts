@@ -34,10 +34,9 @@ const testWithCustom = (input: string, uniforms: string[]) => test(
 const testWithTHREE = (input: string, uniforms: string[], aliasMap?: string[]) => test(
     normaliseTitle(input),
     () => expect(getModuleDeclaration(input, moduleId, THREE))
-        .toBe(
-            (aliasMap ? `namespace THREE ${curlyPad(aliasMap)}\n` : '') +
-            renderModuleDeclaration(moduleId, [], uniforms)
-        )
+        .toBe(renderModuleDeclaration(moduleId, [], uniforms, (
+            !!aliasMap && `namespace THREE ${curlyPad(aliasMap, '', 2)}`
+        )))
 );
 
 test('get module declaration from file', async () => {
@@ -140,7 +139,9 @@ test('`inject` is included when constants are found', () => {
 
     const declaration = `declare module '${moduleId}' {\n${[
         `    const ${shaderName}: string;`,
+        '',
         '    const inject: (map: { bar?: [number, number] }) => string;',
+        '',
         '    export {',
         `        ${shaderName} as default,`,
         `        ${shaderName} as glsl,`,
@@ -164,8 +165,9 @@ test('`inject` is not included when no constants are found', () => {
 
     const declaration = `declare module '${moduleId}' {\n${[
         `    const ${shaderName}: string;`,
-        `    export { ${shaderName} as default, ${shaderName} as glsl, ${shaderName} };`
-    ].join('\n')}\n}`;
+        '',
+        `    export { ${shaderName} as default, ${shaderName} as glsl, ${shaderName} };`,
+    ].join('\n')}\n}`
 
     expect(getModuleDeclaration(glsl, moduleId)).toBe(declaration)
 })
@@ -334,10 +336,9 @@ describe('uniforms', () => {
                 expect(getModuleDeclaration(input, moduleId, {
                     types: { vec2: [{ alias: 'Vec2', type: '{ x: number, y: number, isVector2: true }' }]}
                 }))
-                    .toBe(
-                        'type Vec2 = { x: number, y: number, isVector2: true };\n'+
-                        renderModuleDeclaration(moduleId, [], uniforms)
-                    );
+                    .toBe(renderModuleDeclaration(moduleId, [], uniforms, (
+                        'type Vec2 = { x: number, y: number, isVector2: true };'
+                    )));
     
             test('float vector', () => {
                 testWithCustomAlias(

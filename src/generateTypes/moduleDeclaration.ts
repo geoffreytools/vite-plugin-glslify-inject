@@ -57,7 +57,7 @@ const renderModuleDeclaration = (
     moduleId: string,
     constants: string[] = [],
     uniforms: string[] = [],
-    lib: string | false
+    lib?: string | false
 ) => {
     const name = displayName(moduleId);
 

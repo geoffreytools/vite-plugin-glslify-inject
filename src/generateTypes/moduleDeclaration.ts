@@ -30,14 +30,12 @@ const getModuleDeclaration = (
             init
         );
     
-    return listJoin('\n')([
-        generateUniforms && renderTypeAliases(keys, library),
-        renderModuleDeclaration(moduleId, constants, uniforms)
-    ]);
+    const lib = !!generateUniforms && renderTypeAliases(keys, library);
+    return renderModuleDeclaration(moduleId, constants, uniforms, lib);
 };
 
 const isAlias = (x: unknown): x is { alias: string, type: string } =>
-        typeof x !== 'string';
+    typeof x !== 'string';
 
 const renderTypeAliases = (
     keys: Uniforms.Keys[],
@@ -48,9 +46,9 @@ const renderTypeAliases = (
         : types[key]!.filter(isAlias).map(({ alias, type }) =>`type ${alias} = ${type};`)
     );
 
-    return _types.length && (
+    return !!_types.length && (
         namespace
-        ? `namespace ${namespace} ${curlyPad(_types.map(x => `export ${x}`))}`
+        ? `namespace ${namespace} ${curlyPad(_types.map(x => `export ${x}`), '', 2)}`
         : listJoin('\n')(_types)
     )
 }
@@ -58,18 +56,21 @@ const renderTypeAliases = (
 const renderModuleDeclaration = (
     moduleId: string,
     constants: string[] = [],
-    uniforms: string[] = []
+    uniforms: string[] = [],
+    lib: string | false
 ) => {
     const name = displayName(moduleId);
 
     const declarations = [
+        lib,
         `const ${name}: string;`,
         renderConstDeclaration(constants),
         renderUniformsDeclaration(name, uniforms),
+        
         renderExportDeclaration(name, constants, uniforms)
     ];
 
-    return `declare module '${moduleId}' ${curlyPad(declarations)}`
+    return `declare module '${moduleId}' ${curlyPad(declarations, '\n')}`
 };
 
 const renderConstDeclaration = (args: string[]) =>

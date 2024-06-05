@@ -3,7 +3,7 @@ export { mapJoin, curlyInline, parenInline, squareInline, curlyPad, curlyDynamic
 export type { Showable };
 
 import { flow, pipe } from "./fn.js";
-import { basename } from 'node:path'
+import { basename } from 'path-browserify'
 
 type Falsy = false | 0 | null | undefined;
 

@@ -16,7 +16,7 @@ test('transform', async () => {
 
 import { entrypoint as text, inject } from './files/bundle.js';
 
-test('inject() injects variables', async () => {
+test('inject() injects variables', () => {
     const bar = Math.round(Math.random() * 10);
 
     expect(inject({ bar })).toBe(text.replace(

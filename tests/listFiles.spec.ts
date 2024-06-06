@@ -9,7 +9,7 @@ const cleanupPaths = (paths: string[]) => (
 
 describe('recursively list files in a directory', () => {
     test('all files', () => {
-        listFiles(dir)
+        return listFiles(dir)
             .then(cleanupPaths)
             .then(paths => expect(paths).toEqual([
                 "bar.vert",
@@ -21,7 +21,7 @@ describe('recursively list files in a directory', () => {
     })
 
     test('.glsl only', () => {
-        listFiles(dir,['.glsl'])
+        return listFiles(dir,['.glsl'])
             .then(cleanupPaths)
             .then(paths => expect(paths).toEqual([
                 `lib${sep}bibi.glsl`,
@@ -31,7 +31,7 @@ describe('recursively list files in a directory', () => {
     })
 
     test('.frag and .vert only', () => {
-        listFiles(dir, ['.frag', '.vert'])
+        return listFiles(dir, ['.frag', '.vert'])
             .then(cleanupPaths)
             .then(paths => expect(paths).toEqual([
                 "bar.vert",

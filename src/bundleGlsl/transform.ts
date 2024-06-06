@@ -3,7 +3,7 @@ export { transform };
 // @ts-expect-error: types unavailable
 import { compile } from 'glslify';
 import { dirname } from 'node:path'
-import { listJoin, displayName, curlyDynamic } from '#lib/str.js';
+import { listJoin, displayName, curlyDynamic } from '../lib/str.js';
 
 const transform = (code: string, path: string) => {
     const basedir = dirname(path);

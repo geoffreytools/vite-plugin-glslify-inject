@@ -1,9 +1,9 @@
 export { matchDeclarations, constructType };
 export type { Keys, Library };
 
-import { listJoin, squareInline, wrap, unwrap } from '#lib/str.js';
-import { groupBy, repeat } from '#lib/list.js';
-import { flow, pipe } from '#lib/fn.js';
+import { listJoin, squareInline, wrap, unwrap } from '../lib/str.js';
+import { groupBy, repeat } from '../lib/list.js';
+import { flow, pipe } from '../lib/fn.js';
 import { Vec } from './utils.js';
 
 const constructType = (type: Keys, length: number, lib: Library) => {

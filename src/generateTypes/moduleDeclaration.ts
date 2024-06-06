@@ -1,6 +1,6 @@
 export { getModuleDeclaration, renderModuleDeclaration };
 
-import { curlyPad, curlyInline, capitalize, displayName, listJoin, curlyDynamic, } from '#lib/str.js';
+import { curlyPad, curlyInline, capitalize, displayName, listJoin, curlyDynamic, } from '../lib/str.js';
 import * as Constants from '../translationLayer/constants.js';
 import * as Uniforms from '../translationLayer/uniforms.js';
 

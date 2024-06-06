@@ -3,7 +3,6 @@ export { mapJoin, curlyInline, parenInline, squareInline, curlyPad, curlyDynamic
 export type { Showable };
 
 import { flow, pipe } from "./fn.js";
-import { basename } from 'node:path'
 
 type Falsy = false | 0 | null | undefined;
 
@@ -36,3 +35,9 @@ const curlyDynamic = (lines: Showable[], pad = 1) =>
 
 const capitalize = (a: string) => a[0].toUpperCase() + a.substring(1);
 const displayName = (path: string) => basename(path).split('.')[0];
+
+const basename = (path: string) => {
+    const normalizedPath = path.replace(/\\/g, '/');
+    const base = normalizedPath.substring(normalizedPath.lastIndexOf('/') + 1);
+    return base;
+};
